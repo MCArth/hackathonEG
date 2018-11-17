@@ -6,6 +6,11 @@ def getIntruments():
     request = requests.get("http://egchallenge.tech/instruments").json()
     return request
 
+#returns number of different instruments
+def getNumberOfInstruments():
+    instruments = getIntruments()
+    return len(instruments)
+
 #returns current epoch INT
 def getCurrentEpoch():
     request = requests.get("http://egchallenge.tech/epoch").json()
@@ -22,6 +27,7 @@ def getMarketDataIntrument(instrument):
     return requests.get(url).json()
 
 #returns market data for given epoch JSON
+#EPOCH MUST BE STR
 def getMarketDataEpoch(epoch):
     url = "http://egchallenge.tech/marketdata/epoch/" + epoch
     return requests.get(url).json()
@@ -29,4 +35,3 @@ def getMarketDataEpoch(epoch):
 #returns latest market data JSON
 def getMarketDataLatest():
     return requests.get("http://egchallenge.tech/marketdata/latest").json()
-

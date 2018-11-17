@@ -15,7 +15,7 @@ print(f'password = {password}')
 # challenge.tech/team/create', json={'team_name': team_name, 'password': 'password'}).json()
 # print(create_res)
 
-login_res = requests.post('http://egchallenge.tech/team/login', json={'team_name': team_name, 'password': 'password'}).json()
+login_res = requests.post('http://egchallenge.tech/team/login', json={'team_name': team_name, 'password': password}).json()
 print(login_res)
 
 token = login_res['token']
