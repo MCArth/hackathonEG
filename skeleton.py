@@ -5,7 +5,7 @@ import time
 
 # Very simple example to demonstrate usage of the API.
 
-team_name = 'KeithTest'
+team_name = 'Keith'
 password = 'hunter2'
 
 print(f'team_name = {team_name}')
