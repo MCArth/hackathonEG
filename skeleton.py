@@ -5,14 +5,15 @@ import time
 
 # Very simple example to demonstrate usage of the API.
 
-team_name = ''.join([random.choice(string.ascii_uppercase) for i in range(5)])
-password = ''.join([random.choice(string.ascii_uppercase) for i in range(5)])
+team_name = 'KeithTest'
+password = 'hunter2'
 
 print(f'team_name = {team_name}')
 print(f'password = {password}')
 
-create_res = requests.post('http://egchallenge.tech/team/create', json={'team_name': team_name, 'password': 'password'}).json()
-print(create_res)
+# create_res = requests.post('http://eg
+# challenge.tech/team/create', json={'team_name': team_name, 'password': 'password'}).json()
+# print(create_res)
 
 login_res = requests.post('http://egchallenge.tech/team/login', json={'team_name': team_name, 'password': 'password'}).json()
 print(login_res)
