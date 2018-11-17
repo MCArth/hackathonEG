@@ -1,21 +1,14 @@
-#import pandas
 import getData
 import json
 
-def saveData():
+def saveData(base, offset, instrumentID):
+    data = []
     with open('JsonStore.json', 'w') as f:
         json.dump([], f)
 
-    data = []
-    for i in range(baseEpoch, getData.getCurrentEpoch()+1):
+    for i in range(base, base+offset):
         currentEpochDict = getData.getMarketDataEpoch(str(i))
         data.append(currentEpochDict)
 
     with open('JsonStore.json', 'w') as f:
         json.dump(data, f)
-
-
-baseEpoch = 3000
-
-saveData()
-

@@ -1,5 +1,6 @@
 import requests
 import getData
+import numpy as np
 
 #Takes token and predictions and generates and sends JSON
 #Returns status code
