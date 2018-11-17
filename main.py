@@ -96,8 +96,7 @@ while True:
     dataFrame = dataFrame.dropna(axis=1)
     for index, row in dataFrame.iterrows():
         y = row
-        features = ['epoch']
-        X = (dataFrame.columns.values).reshape(-1, 1)
+        X = dataFrame.columns.values.reshape(-1, 1)
         train_X, test_X, train_y, test_y = train_test_split(X, y, random_state=0)
         tree = DecisionTreeRegressor()
         tree.fit(train_X, train_y)
@@ -110,8 +109,6 @@ while True:
         mae.append(mean_absolute_error(test_y, prediction))
 
     alice = np.asarray(results)
-    bob = alice.tolist()
-    alice = np.asarray(bob)
     bob = alice.tolist()
     statusCode = predictions.sendPredictions(bob)
     print("Predictions sent with status code: " + str(statusCode))
