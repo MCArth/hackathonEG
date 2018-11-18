@@ -1,17 +1,11 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
 import numpy as np
-import statsmodels.formula.api as smf
-from matplotlib import pyplot as plt
-from math import floor, ceil, sqrt, exp, log
 import requests
 import pickle
 import time
 import getData
 import statisticalMethods
-import predictions
 from sklearn.impute import SimpleImputer
 
 def get_returns(t):
@@ -57,7 +51,6 @@ def update_returns_df(input_df, target_epoch=None):
         last_epoch_to_get = current_epoch
     else:
         last_epoch_to_get = target_epoch
-    print(max(input_df.columns))
     last_downloaded_epoch = max(input_df.columns)
 
     while last_downloaded_epoch < last_epoch_to_get:
@@ -95,50 +88,33 @@ print(f'token = {token}')
 
 while True:
     update_returns_df(dataFrame)
-    print(dataFrame)
     startEpoch = getData.getCurrentEpoch()
     epochPrediction = getData.getPredictionEpoch()
     dataLatest = getData.getMarketDataLatest()
     results = []
-    mae = []
     dropped = dataFrame.dropna(axis=1)
     my_imputer=SimpleImputer()
     df = my_imputer.fit_transform(dataFrame)
     df = pd.DataFrame(df)
-    #print(df)
-    #y=row
+
     y = statisticalMethods.simpMovingAverage(df, 40)
-    #y = statisticalMethods.expWeightFuncs(df, 20)
 
 
     X = df.columns.values.reshape(-1, 1)
     tree = RandomForestRegressor(random_state=1)
-    #trainX, testX, trainY, testY = train_test_split(X, y, random_state=0)
     tree.fit(X, y)
     prediction = tree.predict(np.asarray(X).reshape(-1, 1))
-    print(prediction.shape)
     for index, row in df.iterrows():
-        print(index)
         isTrading = dataLatest[index]['is_trading']
         if isTrading:
-            print(index)
             results.append({
                 'instrument_id': int(index + 1),
-                'predicted_return': float(prediction[getData.getCurrentEpoch()-2][index]) #float(prediction[0])
+                'predicted_return': float(prediction[startEpoch-2][index])
             })
-            mae.append(mean_absolute_error(y, prediction))
+    print("Results built")
 
-    print("MAE: " + str(sum(mae)/len(mae)))
-
-    statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
-    print(results)
-    print("Predictions sent with status code: " + str(statusCode))
-    print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
-
-    scores_req = {'token': token}
-    score_res = requests.get('http://egchallenge.tech/scores', json=scores_req).json()
-
-
+    #statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
+    #print("Predictions sent with status code: " + str(statusCode))
 
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
