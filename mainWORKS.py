@@ -118,5 +118,5 @@ while True:
     scores_req = {'token': token}
     scores_res = requests.get('http://egchallenge.tech/scores', json=scores_req).json()
     while startEpoch == getData.getCurrentEpoch():
-        a = 1+1
+        time.sleep(10)
 
