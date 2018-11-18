@@ -2,6 +2,9 @@ import pandas as pd
 import requests
 
 def simpMovingAverage(df, n):
+    epoch_res = requests.get('http://egchallenge.tech/instruments').json()
+    print(df.rolling(n).mean())
+
     return df.rolling(n).mean()
 
 def expWeightFuncs(df, n):
