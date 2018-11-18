@@ -2,13 +2,13 @@ import requests
 
 #returns instruments JSON
 
-def getInstruments(): #excuse me sir what the fuck
+def getInstruments():
       request = requests.get("http://egchallenge.tech/instruments").json()
       return request
 
     #returns number of different instruments
 def getNumberOfInstruments():
-    instruments = getIntruments()
+    instruments = getInstruments()
     return len(instruments)
 
     #returns current epoch INT
