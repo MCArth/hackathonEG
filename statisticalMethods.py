@@ -1,11 +1,18 @@
 import pandas as pd
 import requests
+from sklearn.impute import SimpleImputer
 
 def simpMovingAverage(df, n):
-    epoch_res = requests.get('http://egchallenge.tech/instruments').json()
-    print(df.rolling(n).mean())
 
-    return df.rolling(n).mean()
+    df = df.transpose()
+
+    df = df.rolling(n).mean()
+    my_imputer=SimpleImputer()
+    df = my_imputer.fit_transform(df)
+    df = pd.DataFrame(df)
+
+
+    return df
 
 def expWeightFuncs(df, n):
     return df.ewm(halflife=n)
