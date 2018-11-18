@@ -4,3 +4,7 @@
 __pycache__/
 
 test\.py
+
+example_returns_df
+
+sentData\.json
