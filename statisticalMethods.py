@@ -23,9 +23,12 @@ def expWeightFuncs(df, n):
     df = my_imputer.fit_transform(df)
     df = pd.DataFrame(df)
 
-
-
     return df
+
+def prevReturn(df):
+    df.transpose()
+
+
 
 def industryMovingAvg(df, n):
     hot_encoded = pd.get_dummies(df)

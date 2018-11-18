@@ -66,7 +66,7 @@ def update_returns_df(input_df, target_epoch=None):
         for t in range(last_downloaded_epoch + 1, last_epoch_to_get + 1):
             if (t % 20 == 0):
                 print("Downloading returns for epoch ", t)
-            input_df.append(get_returns(t))
+            input_df[t] = get_returns(t)
 
         # If we had to make a large update, it's possible that the epoch advanced
         # in the meantime
@@ -83,6 +83,7 @@ def update_returns_df(input_df, target_epoch=None):
 
     timestamp = requests.get('http://egchallenge.tech/epoch').json()['unix_timestamp']
     next_epoch_in = max(60.0 - (time.time() - timestamp), 0) + 1.0
+
     return next_epoch_in
 
 dataFrame = create_returns_df()
@@ -95,6 +96,7 @@ print(f'token = {token}')
 
 while True:
     update_returns_df(dataFrame)
+    print(dataFrame)
     startEpoch = getData.getCurrentEpoch()
     epochPrediction = getData.getPredictionEpoch()
     dataLatest = getData.getMarketDataLatest()
@@ -104,32 +106,38 @@ while True:
     my_imputer=SimpleImputer()
     df = my_imputer.fit_transform(dataFrame)
     df = pd.DataFrame(df)
+    #print(df)
     #y=row
-    #y = statisticalMethods.simpMovingAverage(df, 50)
-    y = statisticalMethods.expWeightFuncs(df, 10)
+    y = statisticalMethods.simpMovingAverage(df, 40)
+    #y = statisticalMethods.expWeightFuncs(df, 20)
 
 
     X = df.columns.values.reshape(-1, 1)
     tree = RandomForestRegressor(random_state=1)
-    trainX, testX, trainY, testY = train_test_split(X, y, random_state=0)
-    tree.fit(trainX, trainY)
-    prediction = tree.predict(np.asarray(testX).reshape(-1, 1))
-
+    #trainX, testX, trainY, testY = train_test_split(X, y, random_state=0)
+    tree.fit(X, y)
+    prediction = tree.predict(np.asarray(X).reshape(-1, 1))
+    print(prediction.shape)
     for index, row in df.iterrows():
         print(index)
         isTrading = dataLatest[index]['is_trading']
         if isTrading:
+            print(index)
+            results.append({
+                'instrument_id': int(index + 1),
+                'predicted_return': float(prediction[getData.getCurrentEpoch()-2][index]) #float(prediction[0])
+            })
+            mae.append(mean_absolute_error(y, prediction))
 
-            #results.append({
-             #   'instrument_id': int(index + 1),
-             #   'predicted_return': float(prediction[0])
-            #})
-            mae.append(mean_absolute_error(testY, prediction))
     print("MAE: " + str(sum(mae)/len(mae)))
-    #statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
-    #print(results)
-    #print("Predictions sent with status code: " + str(statusCode))
-    #print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
+
+    statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
+    print(results)
+    print("Predictions sent with status code: " + str(statusCode))
+    print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
+
+    scores_req = {'token': token}
+    score_res = requests.get('http://egchallenge.tech/scores', json=scores_req).json()
 
 
 
