@@ -20,6 +20,7 @@ def save_returns_df(df_to_save):
         pickle.dump(df_to_save, f)
 
 
+
 def create_returns_df(target_epoch=3000):
     try:
         with open("example_returns_df", "rb") as f:
@@ -84,3 +85,5 @@ while(True):
     startEpoc = getData.getCurrentEpoch()
     while (startEpoc == getData.getCurrentEpoch()):
         a = 1+1
+
+print("my dick is masSIVE")
