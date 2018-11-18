@@ -39,13 +39,17 @@ while True:
     predictions = []
     for md in marketdata:
         if md['is_trading']:
+            print(type(md['epoch_return']))
             predictions.append({
                 'instrument_id': md['instrument_id'],
                 'predicted_return': -1.0 * md['epoch_return']
             })
 
+    print(predictions)
     pred_req = {'token': token, 'epoch': prediction_epoch, 'predictions': predictions}
+    print(pred_req)
     pred_res = requests.post('http://egchallenge.tech/predict', json=pred_req)
+    print("CUNT " + str(pred_res.status_code))
     print(f'Submitted {len(predictions)} predictions for epoch {prediction_epoch}')
 
     # Now get our scores for prior predictions

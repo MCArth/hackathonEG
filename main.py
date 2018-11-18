@@ -11,6 +11,8 @@ import pickle
 import time
 import getData
 import predictions
+import json
+import sys
 
 def get_returns(t):
     r = requests.get("http://egchallenge.tech/marketdata/epoch/" + str(t))
@@ -86,32 +88,35 @@ def update_returns_df(input_df, target_epoch=None):
 
 dataFrame = create_returns_df()
 
+login_res = requests.post('http://egchallenge.tech/team/login', json={'team_name': 'Keith', 'password': 'hunter2'}).json()
+token = login_res['token']
+
 while True:
 
     update_returns_df(dataFrame)
     startEpoch = getData.getCurrentEpoch()
 
     results = []
-    mae = []
-    dataFrame = dataFrame.dropna(axis=1)
-    for index, row in dataFrame.iterrows():
+    dropped = dataFrame.dropna(axis=1)
+    toPredict = getData.getPredictionEpoch()
+    for index, row in dropped.iterrows():
+        print(index+1)
         y = row
-        X = dataFrame.columns.values.reshape(-1, 1)
-        train_X, test_X, train_y, test_y = train_test_split(X, y, random_state=0)
+        X = dropped.columns.values.reshape(-1, 1)
         tree = DecisionTreeRegressor()
-        tree.fit(train_X, train_y)
-        prediction = tree.predict(test_X)
+        tree.fit(X, y)
+        prediction = tree.predict(toPredict)
+        value = round(float(prediction[0]), 8)
         results.append({
-            'instrument_id': index,
-            'predicted_return': prediction
+            'instrument_id': index+1,
+            'predicted_return': value
         })
-        results.append(prediction)
-        mae.append(mean_absolute_error(test_y, prediction))
-
-    alice = np.asarray(results)
-    bob = alice.tolist()
-    statusCode = predictions.sendPredictions(bob)
+    #statusCode = predictions.sendPredictions(results, toPredict)
+    pred_req = {'token': token, 'epoch': toPredict, 'predictions': results}
+    pred_res = requests.post('http://egchallenge.tech/predict', json=pred_req)
+    statusCode = pred_res.status_code
     print("Predictions sent with status code: " + str(statusCode))
-    print("Sent predictions with mae of: " + str(sum(mae)/500))
+    if statusCode == 400:
+        sys.exit(0)
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
