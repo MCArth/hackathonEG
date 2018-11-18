@@ -7,6 +7,7 @@ import statsmodels.formula.api as smf
 from matplotlib import pyplot as plt
 from math import floor, ceil, sqrt, exp, log
 import requests
+from sklearn.impute import SimpleImputer
 import pickle
 import time
 import getData
@@ -26,6 +27,7 @@ def save_returns_df(df_to_save):
         # pickle.dump saves a python object to a file,
         # in a way which can be later restored with pickle.load
         pickle.dump(df_to_save, f)
+
 
 
 def create_returns_df(target_epoch=3000):
@@ -51,13 +53,11 @@ def create_returns_df(target_epoch=3000):
 def update_returns_df(input_df, target_epoch=None):
     current_epoch = requests.get('http://egchallenge.tech/epoch').json()['current_epoch']
     print("Current epoch:", current_epoch)
-
     # If target_epoch is None then we want to bring the dataframe fully up-to-date
     if target_epoch is None or current_epoch < target_epoch:
         last_epoch_to_get = current_epoch
     else:
         last_epoch_to_get = target_epoch
-
     last_downloaded_epoch = max(input_df.columns)
 
     while last_downloaded_epoch < last_epoch_to_get:
@@ -66,7 +66,7 @@ def update_returns_df(input_df, target_epoch=None):
         for t in range(last_downloaded_epoch + 1, last_epoch_to_get + 1):
             if (t % 20 == 0):
                 print("Downloading returns for epoch ", t)
-            input_df[t] = get_returns(t)
+            input_df.append(get_returns(t))
 
         # If we had to make a large update, it's possible that the epoch advanced
         # in the meantime
@@ -116,3 +116,4 @@ while True:
     print("Sent predictions with mae of: " + str(sum(mae)/500))
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
+

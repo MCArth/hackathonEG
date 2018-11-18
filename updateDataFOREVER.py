@@ -44,14 +44,16 @@ def create_returns_df(target_epoch=3000):
 def update_returns_df(input_df, target_epoch=None):
     current_epoch = requests.get('http://egchallenge.tech/epoch').json()['current_epoch']
     print("Current epoch:", current_epoch)
-
     # If target_epoch is None then we want to bring the dataframe fully up-to-date
     if target_epoch is None or current_epoch < target_epoch:
         last_epoch_to_get = current_epoch
     else:
         last_epoch_to_get = target_epoch
-
-    last_downloaded_epoch = max(input_df.columns)
+    print("Length: " + str(len(input_df.index)))
+    if len(input_df.index) > 0:
+        last_downloaded_epoch = len(input_df.index)
+    else:
+        last_downloaded_epoch = 0
 
     while last_downloaded_epoch < last_epoch_to_get:
         print("Downloading returns up to epoch ", last_epoch_to_get)
@@ -59,7 +61,7 @@ def update_returns_df(input_df, target_epoch=None):
         for t in range(last_downloaded_epoch + 1, last_epoch_to_get + 1):
             if (t % 20 == 0):
                 print("Downloading returns for epoch ", t)
-            input_df[t] = get_returns(t)
+            input_df.append(get_returns(t))
 
         # If we had to make a large update, it's possible that the epoch advanced
         # in the meantime
@@ -85,5 +87,3 @@ while(True):
     startEpoc = getData.getCurrentEpoch()
     while (startEpoc == getData.getCurrentEpoch()):
         a = 1+1
-
-print("my dick is masSIVE")
