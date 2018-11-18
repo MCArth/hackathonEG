@@ -12,6 +12,7 @@ import time
 import getData
 import statisticalMethods
 import predictions
+from sklearn.impute import SimpleImputer
 
 def get_returns(t):
     r = requests.get("http://egchallenge.tech/marketdata/epoch/" + str(t))
@@ -99,22 +100,29 @@ while True:
     dataLatest = getData.getMarketDataLatest()
     results = []
     mae = []
-    dropped = dataFrame.dropna(axis=1)
-    y = statisticalMethods.simpMovingAverage(dropped, 10)
+    #dropped = dataFrame.dropna(axis=1)
+    my_imputer=SimpleImputer()
+    df = my_imputer.fit_transform(dataFrame)
+    df = pd.DataFrame(df)
+    #y=row
+    y = statisticalMethods.simpMovingAverage(df, 10)
+    print(y)
 
-    for index, row in dropped.iterrows():
+    X = df.columns.values.reshape(-1, 1)
+    tree = RandomForestRegressor(random_state=1)
+    trainX, testX, trainY, testY = train_test_split(X, y, random_state=0)
+    tree.fit(trainX, trainY)
+    prediction = tree.predict(np.asarray(testX).reshape(-1, 1))
+
+    for index, row in df.iterrows():
+        print(index)
         isTrading = dataLatest[index]['is_trading']
         if isTrading:
 
-            X = dropped.columns.values.reshape(-1, 1)
-            tree = RandomForestRegressor(random_state=1)
-            trainX, testX, trainY, testY = train_test_split(X, y, random_state=0)
-            tree.fit(trainX, trainY)
-            prediction = tree.predict(np.asarray(testX).reshape(-1, 1))
-            results.append({
-                'instrument_id': int(index + 1),
-                'predicted_return': float(prediction[0])
-            })
+            #results.append({
+             #   'instrument_id': int(index + 1),
+             #   'predicted_return': float(prediction[0])
+            #})
             mae.append(mean_absolute_error(testY, prediction))
     print("MAE: " + str(sum(mae)/len(mae)))
     #statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)

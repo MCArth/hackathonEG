@@ -15,6 +15,8 @@ def simpMovingAverage(df, n):
     return df
 
 def expWeightFuncs(df, n):
+    
+
     return df.ewm(halflife=n)
 
 def industryMovingAvg(df, n):
