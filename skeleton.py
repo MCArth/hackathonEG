@@ -42,7 +42,7 @@ while True:
             print(type(md['epoch_return']))
             predictions.append({
                 'instrument_id': md['instrument_id'],
-                'predicted_return': -1.0 * md['epoch_return']
+                'predicted_return': 0 #-1.0 * md['epoch_return']
             })
 
     print(predictions)
