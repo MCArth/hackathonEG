@@ -14,6 +14,7 @@ import statisticalMethods
 import predictions
 from sklearn.impute import SimpleImputer
 
+
 def get_returns(t):
     r = requests.get("http://egchallenge.tech/marketdata/epoch/" + str(t))
     # The data is formatted as a list of dictionaries
@@ -49,15 +50,16 @@ def create_returns_df(target_epoch=3000):
         save_returns_df(ret)
         return ret
 
+
 def update_returns_df(input_df, target_epoch=None):
     current_epoch = requests.get('http://egchallenge.tech/epoch').json()['current_epoch']
     print("Current epoch:", current_epoch)
+
     # If target_epoch is None then we want to bring the dataframe fully up-to-date
     if target_epoch is None or current_epoch < target_epoch:
         last_epoch_to_get = current_epoch
     else:
         last_epoch_to_get = target_epoch
-    print(max(input_df.columns))
     last_downloaded_epoch = max(input_df.columns)
 
     while last_downloaded_epoch < last_epoch_to_get:
@@ -66,7 +68,7 @@ def update_returns_df(input_df, target_epoch=None):
         for t in range(last_downloaded_epoch + 1, last_epoch_to_get + 1):
             if (t % 20 == 0):
                 print("Downloading returns for epoch ", t)
-            input_df.append(get_returns(t))
+            input_df[t] = get_returns(t)
 
         # If we had to make a large update, it's possible that the epoch advanced
         # in the meantime
@@ -92,47 +94,42 @@ print(login_res)
 token = login_res['token']
 print(f'token = {token}')
 
-
 while True:
+    mae = []
+
     update_returns_df(dataFrame)
     startEpoch = getData.getCurrentEpoch()
     epochPrediction = getData.getPredictionEpoch()
     dataLatest = getData.getMarketDataLatest()
     results = []
-    mae = []
-    #dropped = dataFrame.dropna(axis=1)
-    my_imputer=SimpleImputer()
+
+    my_imputer = SimpleImputer()
     df = my_imputer.fit_transform(dataFrame)
     df = pd.DataFrame(df)
-    #y=row
-    #y = statisticalMethods.simpMovingAverage(df, 50)
-    y = statisticalMethods.expWeightFuncs(df, 10)
 
-
+    y = statisticalMethods.simpMovingAverage(df, 10)
     X = df.columns.values.reshape(-1, 1)
     tree = RandomForestRegressor(random_state=1)
-    trainX, testX, trainY, testY = train_test_split(X, y, random_state=0)
-    tree.fit(trainX, trainY)
-    prediction = tree.predict(np.asarray(testX).reshape(-1, 1))
+    trainX, testX, trainY, testY = train_test_split(X,y,random_state=0)
+    tree.fit(X, y)
+    prediction = tree.predict(np.asarray(epochPrediction).reshape(-1, 1))
 
     for index, row in df.iterrows():
-        print(index)
         isTrading = dataLatest[index]['is_trading']
         if isTrading:
-
             #results.append({
-             #   'instrument_id': int(index + 1),
-             #   'predicted_return': float(prediction[0])
+            #    'instrument_id': int(index + 1),
+            #    'predicted_return': float(prediction[0])
             #})
-            mae.append(mean_absolute_error(testY, prediction))
-    print("MAE: " + str(sum(mae)/len(mae)))
+            mae.append(mean_absolute_error(testY,testX))
     #statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
     #print(results)
     #print("Predictions sent with status code: " + str(statusCode))
     #print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
+    #scores_req = {'token': token}
+    #scores_res = requests.get('http://egchallenge.tech/scores', json=scores_req).json()
 
-
-
+    print("MAE: " + str(sum(mae)/len(mae)))
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
 

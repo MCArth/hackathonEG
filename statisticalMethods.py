@@ -15,9 +15,17 @@ def simpMovingAverage(df, n):
     return df
 
 def expWeightFuncs(df, n):
-    
+    df = df.transpose()
 
-    return df.ewm(halflife=n)
+
+    df = df.ewm(halflife = n).mean()
+    my_imputer = SimpleImputer()
+    df = my_imputer.fit_transform(df)
+    df = pd.DataFrame(df)
+
+
+
+    return df
 
 def industryMovingAvg(df, n):
     hot_encoded = pd.get_dummies(df)
