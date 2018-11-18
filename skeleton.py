@@ -39,12 +39,10 @@ while True:
     predictions = []
     for md in marketdata:
         if md['is_trading']:
-            print(type(md['epoch_return']))
             predictions.append({
                 'instrument_id': md['instrument_id'],
                 'predicted_return': -1.0 * md['epoch_return']
             })
-
     print(predictions)
     pred_req = {'token': token, 'epoch': prediction_epoch, 'predictions': predictions}
     print(pred_req)

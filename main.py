@@ -19,7 +19,7 @@ def get_returns(t):
     # The data is formatted as a list of dictionaries
     # We pass it to the DataFrame constructor to create a DataFrame,
     # then select the epoch_return column (returned as a Pandas Series)
-    return pd.DataFrame(r.json())["epoch_return"]
+    return pd.DataFrame(r.json())
 
 
 def save_returns_df(df_to_save):
@@ -86,31 +86,33 @@ def update_returns_df(input_df, target_epoch=None):
     next_epoch_in = max(60.0 - (time.time() - timestamp), 0) + 1.0
     return next_epoch_in
 
+f = open("example_returns_df", "wb")
+pickle.dump(pd.DataFrame, f)
+f.close()
 dataFrame = create_returns_df()
 
 login_res = requests.post('http://egchallenge.tech/team/login', json={'team_name': 'Keith', 'password': 'hunter2'}).json()
 token = login_res['token']
 
 while True:
-
     update_returns_df(dataFrame)
     startEpoch = getData.getCurrentEpoch()
-
     results = []
     dropped = dataFrame.dropna(axis=1)
     toPredict = getData.getPredictionEpoch()
     for index, row in dropped.iterrows():
-        print(index+1)
-        y = row
-        X = dropped.columns.values.reshape(-1, 1)
-        tree = DecisionTreeRegressor()
-        tree.fit(X, y)
-        prediction = tree.predict(toPredict)
-        value = round(float(prediction[0]), 8)
-        results.append({
-            'instrument_id': index+1,
-            'predicted_return': value
-        })
+        if dataFrame['is_trading']:
+            print(index + 1)
+            y = row['epoch_return']
+            X = dropped.columns.values.reshape(-1, 1)
+            tree = DecisionTreeRegressor()
+            tree.fit(X, y)
+            prediction = tree.predict(toPredict)
+            value = float(round(prediction[0], 8))
+            results.append({
+                'instrument_id': index + 1,
+                'predicted_return': value
+            })
     #statusCode = predictions.sendPredictions(results, toPredict)
     pred_req = {'token': token, 'epoch': toPredict, 'predictions': results}
     pred_res = requests.post('http://egchallenge.tech/predict', json=pred_req)
