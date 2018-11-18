@@ -92,39 +92,31 @@ print(login_res)
 token = login_res['token']
 print(f'token = {token}')
 
-
 while True:
     update_returns_df(dataFrame)
     startEpoch = getData.getCurrentEpoch()
     epochPrediction = getData.getPredictionEpoch()
     dataLatest = getData.getMarketDataLatest()
     results = []
-    mae = []
     dropped = dataFrame.dropna(axis=1)
-    y = statisticalMethods.simpMovingAverage(dropped, 10)
-
     for index, row in dropped.iterrows():
         isTrading = dataLatest[index]['is_trading']
         if isTrading:
-
+            y = row
             X = dropped.columns.values.reshape(-1, 1)
             tree = RandomForestRegressor(random_state=1)
-            trainX, testX, trainY, testY = train_test_split(X, y, random_state=0)
-            tree.fit(trainX, trainY)
-            prediction = tree.predict(np.asarray(testX).reshape(-1, 1))
+            tree.fit(X, y)
+            prediction = tree.predict(np.asarray(epochPrediction).reshape(-1, 1))
             results.append({
                 'instrument_id': int(index + 1),
                 'predicted_return': float(prediction[0])
             })
-            mae.append(mean_absolute_error(testY, prediction))
-    print("MAE: " + str(sum(mae)/len(mae)))
-    #statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
-    #print(results)
-    #print("Predictions sent with status code: " + str(statusCode))
-    #print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
-
-
-
+    statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
+    print(results)
+    print("Predictions sent with status code: " + str(statusCode))
+    print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
+    scores_req = {'token': token}
+    scores_res = requests.get('http://egchallenge.tech/scores', json=scores_req).json()
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
 
