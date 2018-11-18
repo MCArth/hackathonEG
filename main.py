@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 import numpy as np
@@ -7,7 +7,6 @@ import statsmodels.formula.api as smf
 from matplotlib import pyplot as plt
 from math import floor, ceil, sqrt, exp, log
 import requests
-from sklearn.impute import SimpleImputer
 import pickle
 import time
 import getData
@@ -27,7 +26,6 @@ def save_returns_df(df_to_save):
         # pickle.dump saves a python object to a file,
         # in a way which can be later restored with pickle.load
         pickle.dump(df_to_save, f)
-
 
 
 def create_returns_df(target_epoch=3000):
@@ -58,6 +56,7 @@ def update_returns_df(input_df, target_epoch=None):
         last_epoch_to_get = current_epoch
     else:
         last_epoch_to_get = target_epoch
+    print(max(input_df.columns))
     last_downloaded_epoch = max(input_df.columns)
 
     while last_downloaded_epoch < last_epoch_to_get:
@@ -86,34 +85,35 @@ def update_returns_df(input_df, target_epoch=None):
     return next_epoch_in
 
 dataFrame = create_returns_df()
+login_res = requests.post('http://egchallenge.tech/team/login', json={'team_name': 'Keith', 'password': 'hunter2'}).json()
+print(login_res)
+
+token = login_res['token']
+print(f'token = {token}')
 
 while True:
-
     update_returns_df(dataFrame)
     startEpoch = getData.getCurrentEpoch()
-
+    epochPrediction = getData.getPredictionEpoch()
+    dataLatest = getData.getMarketDataLatest()
     results = []
-    mae = []
-    dataFrame = dataFrame.dropna(axis=1)
-    for index, row in dataFrame.iterrows():
-        y = statisticalMethods.simpMovingAverage(dataFrame, 10)
-        X = dataFrame.columns.values.reshape(-1, 1)
-        train_X, test_X, train_y, test_y = train_test_split(X, y, random_state=0)
-        tree = DecisionTreeRegressor()
-        tree.fit(train_X, train_y)
-        prediction = tree.predict(test_X)
-        results.append({
-            'instrument_id': index,
-            'predicted_return': prediction
-        })
-        results.append(prediction)
-        mae.append(mean_absolute_error(test_y, prediction))
-
-    alice = np.asarray(results)
-    bob = alice.tolist()
-    #statusCode = predictions.sendPredictions(bob)
-    #print("Predictions sent with status code: " + str(statusCode))
-    print("Sent predictions with mae of: " + str(sum(mae)/500))
+    dropped = dataFrame.dropna(axis=1)
+    for index, row in dropped.iterrows():
+        isTrading = dataLatest[index]['is_trading']
+        if isTrading:
+            y = row
+            X = dropped.columns.values.reshape(-1, 1)
+            tree = RandomForestRegressor(random_state=1)
+            tree.fit(X, y)
+            prediction = tree.predict(np.asarray(epochPrediction).reshape(-1, 1))
+            results.append({
+                'instrument_id': int(index + 1),
+                'predicted_return': float(prediction[0])
+            })
+    statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
+    print(results)
+    print("Predictions sent with status code: " + str(statusCode))
+    print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
 

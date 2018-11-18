@@ -20,7 +20,6 @@ def save_returns_df(df_to_save):
         pickle.dump(df_to_save, f)
 
 
-
 def create_returns_df(target_epoch=3000):
     try:
         with open("example_returns_df", "rb") as f:
@@ -49,11 +48,8 @@ def update_returns_df(input_df, target_epoch=None):
         last_epoch_to_get = current_epoch
     else:
         last_epoch_to_get = target_epoch
-    print("Length: " + str(len(input_df.index)))
-    if len(input_df.index) > 0:
-        last_downloaded_epoch = len(input_df.index)
-    else:
-        last_downloaded_epoch = 0
+    print(max(input_df.columns))
+    last_downloaded_epoch = max(input_df.columns)
 
     while last_downloaded_epoch < last_epoch_to_get:
         print("Downloading returns up to epoch ", last_epoch_to_get)

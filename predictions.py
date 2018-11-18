@@ -3,12 +3,14 @@ import json
 
 #Takes token and predictions and generates and sends JSON
 #Returns status code
-def sendPredictions(predictions, predictionEpoc):
+def sendPredictions(predictions, token):
     payload = {
-        'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjE0fQ.giHEykztGqIO988hG5jr468vWo3yE2c4OTFT6MAzqqk',
-        'epoch': predictionEpoc,
+        'token': token,
+
+        'epoch': requests.get("http://egchallenge.tech/epoch").json()['prediction_epoch'],
         'predictions': predictions
     }
+    print(predictions)
     with open('sentData.json', 'w') as f:
         json.dump(payload, f)
 
