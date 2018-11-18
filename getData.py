@@ -2,7 +2,7 @@ import requests
 
 #returns instruments JSON
 
-def getIntruments():
+def getInstruments(): #excuse me sir what the fuck
       request = requests.get("http://egchallenge.tech/instruments").json()
       return request
 
