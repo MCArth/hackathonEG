@@ -8,7 +8,7 @@ def saveData(base, offset, instrumentID):
 
     for i in range(base, base+offset):
         currentEpochDict = getData.getMarketDataEpoch(str(i))
-        data.append(currentEpochDict[instrumentID])
+        data.append(currentEpochDict)
 
     with open('JsonStore.json', 'w') as f:
         json.dump(data, f)

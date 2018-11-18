@@ -3,9 +3,6 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 import numpy as np
-import statsmodels.formula.api as smf
-from matplotlib import pyplot as plt
-from math import floor, ceil, sqrt, exp, log
 import requests
 import pickle
 import time
