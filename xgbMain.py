@@ -1,16 +1,9 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
 import numpy as np
-import statsmodels.formula.api as smf
-from matplotlib import pyplot as plt
-from math import floor, ceil, sqrt, exp, log
 import requests
 import pickle
 import time
 import getData
-import statisticalMethods
 import predictions
 from xgboost import XGBRegressor
 
@@ -106,19 +99,17 @@ while True:
         if isTrading:
             y = row
             X = dropped.columns.values.reshape(-1, 1)
-            tree = XGBRegressor(verbose=False, n_estimators=700)
-            tree.fit(X, y)
+            tree = XGBRegressor()
+            tree =
+            tree.train()
             prediction = tree.predict(np.asarray(epochPrediction).reshape(-1, 1))
             results.append({
                 'instrument_id': int(index + 1),
                 'predicted_return': float(prediction[0])
             })
     statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
-    print(results)
-    print("Predictions sent with status code: " + str(statusCode))
-    print(requests.get("http://egchallenge.tech/scores", {'token': token}).json)
-    scores_req = {'token': token}
-    scores_res = requests.get('http://egchallenge.tech/scores', json=scores_req).json()
+    #print(results)
+    #print("Predictions sent with status code: " + str(statusCode))
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
 

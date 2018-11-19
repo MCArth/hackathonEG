@@ -105,7 +105,6 @@ while True:
     my_imputer=SimpleImputer()
     df = my_imputer.fit_transform(dataFrame)
     df = pd.DataFrame(df)
-    #y=row
     y = pd.DataFrame()
     y['simple'] = pd.DataFrame(statisticalMethods.simpMovingAverage(df, 10), index=range(500)).iloc[0]
     features = ['simple', ]

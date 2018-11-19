@@ -7,6 +7,7 @@ import time
 import getData
 import statisticalMethods
 from sklearn.impute import SimpleImputer
+import predictions
 
 def get_returns(t):
     r = requests.get("http://egchallenge.tech/marketdata/epoch/" + str(t))
@@ -113,8 +114,8 @@ while True:
             })
     print("Results built")
 
-    #statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
-    #print("Predictions sent with status code: " + str(statusCode))
+    statusCode = predictions.sendPredictions(np.asarray(results).tolist(), token)
+    print("Predictions sent with status code: " + str(statusCode))
 
     while startEpoch == getData.getCurrentEpoch():
         a = 1+1
